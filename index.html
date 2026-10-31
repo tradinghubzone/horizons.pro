@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Deriv AI Trade · Options</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* ----- RESET & GLOBAL ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: #0b0e14;
+      color: #e9edf5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    /* ----- APP CONTAINER (mobile-first, but works on desktop) ----- */
+    .app {
+      max-width: 1200px;
+      width: 100%;
+      background: #131a27;
+      border-radius: 36px;
+      padding: 20px 18px;
+      box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.05);
+      border: 1px solid #2a3440;
+      transition: all 0.2s;
+    }
+
+    /* ----- HEADER / TOP BAR ----- */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      background: #2b6bff;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: white;
+      box-shadow: 0 6px 12px rgba(43, 107, 255, 0.3);
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #ffffff, #b0c4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .balance-card {
+      background: #1e2839;
+      padding: 8px 18px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #314152;
+    }
+
+    .balance-label {
+      font-size: 13px;
+      color: #8b9bb5;
+    }
+
+    .balance-amount {
+      font-weight: 700;
+      font-size: 20px;
+      color: #ffffff;
+    }
+
+    .balance-amount i {
+      font-size: 14px;
+      color: #f0b90b;
+      margin-right: 5px;
+    }
+
+    /* ----- DEPOSIT / WITHDRAW QUICK BUTTONS ----- */
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 26px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      background: #1f2a3c;
+      color: #e9edf5;
+      border: 1px solid #314152;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn i {
+      font-size: 16px;
+    }
+
+    .btn-primary {
+      background: #2b6bff;
+      border-color: #2b6bff;
+      color: white;
+      box-shadow: 0 8px 16px -4px #2b6bff55;
+    }
+
+    .btn-primary:hover {
+      background: #1e5aff;
+      transform: scale(1.02);
+    }
+
+    .btn-mpesa {
+      background: #1e8e3e;
+      border-color: #1e8e3e;
+      color: white;
+    }
+
+    .btn-mpesa:hover {
+      background: #167a32;
+      transform: scale(1.02);
+    }
+
+    .btn-binance {
+      background: #f0b90b;
+      border-color: #f0b90b;
+      color: #0b0e14;
+    }
+
+    .btn-binance:hover {
+      background: #e0ab08;
+      transform: scale(1.02);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #3e4f64;
+    }
+
+    .btn-outline:hover {
+      background: #1e2839;
+    }
+
+    /* ----- MAIN TRADING GRID (options + controls) ----- */
+    .trade-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    @media (max-width: 720px) {
+      .trade-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+    }
+
+    /* CARD STYLES */
+    .card {
+      background: #101823;
+      border-radius: 28px;
+      padding: 20px 18px;
+      border: 1px solid #263040;
+      box-shadow: 0 8px 16px -8px black;
+      transition: 0.2s;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .card-header h3 {
+      font-weight: 600;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #d8e2f2;
+    }
+
+    .card-header i {
+      color: #2b6bff;
+      font-size: 18px;
+    }
+
+    .badge-option {
+      background: #1f2a3c;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #a0b5dd;
+      letter-spacing: 0.3px;
+      border: 1px solid #2f4056;
+    }
+
+    /* OPTION SELECTOR */
+    .option-buttons {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .opt-btn {
+      flex: 1;
+      padding: 16px 0;
+      border-radius: 16px;
+      border: none;
+      font-weight: 700;
+      font-size: 18px;
+      background: #1a2438;
+      color: #97a9c7;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #2e3e56;
+    }
+
+    .opt-btn i {
+      font-size: 24px;
+    }
+
+    .opt-btn small {
+      font-size: 12px;
+      font-weight: 400;
+      color: #6a7e9e;
+    }
+
+    .opt-btn.active {
+      background: #2b6bff;
+      color: white;
+      border-color: #2b6bff;
+      box-shadow: 0 8px 18px -4px #2b6bffaa;
+    }
+
+    .opt-btn.active small {
+      color: #d9e4ff;
+    }
+
+    .opt-btn.sell.active {
+      background: #d94c4c;
+      border-color: #d94c4c;
+      box-shadow: 0 8px 18px -4px #d94c4caa;
+    }
+
+    .opt-btn.buy.active {
+      background: #1e9e5a;
+      border-color: #1e9e5a;
+      box-shadow: 0 8px 18px -4px #1e9e5aaa;
+    }
+
+    /* PRICE / STAKE ROW */
+    .input-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      flex: 1;
+      background: #0d131f;
+      border-radius: 18px;
+      padding: 8px 16px;
+      border: 1px solid #283344;
+      transition: 0.1s;
+    }
+
+    .input-group:focus-within {
+      border-color: #2b6bff;
+      box-shadow: 0 0 0 2px #2b6bff22;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 11px;
+      color: #6f85a8;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .input-group input {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      width: 100%;
+      outline: none;
+    }
+
+    .input-group input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .input-group input::-webkit-outer-spin-button,
+    .input-group input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* CONTRACT INFO */
+    .contract-info {
+      display: flex;
+      justify-content: space-between;
+      background: #0a101a;
+      border-radius: 18px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      font-size: 14px;
+      border: 1px solid #1f2b3b;
+    }
+
+    .contract-info span {
+      color: #8298b8;
+    }
+
+    .contract-info strong {
+      color: #e3eaf7;
+    }
+
+    /* PLACE TRADE BUTTON */
+    .trade-btn {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 60px;
+      font-weight: 800;
+      font-size: 18px;
+      background: linear-gradient(135deg, #2b6bff, #1b4fdd);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 12px 24px -8px #2b6bff99;
+      letter-spacing: 0.3px;
+    }
+
+    .trade-btn:hover {
+      filter: brightness(1.1);
+      transform: scale(1.01);
+    }
+
+    /* AI / MANUAL TOGGLE + BOT */
+    .ai-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ai-toggle {
+      display: flex;
+      background: #0d131f;
+      border-radius: 60px;
+      padding: 4px;
+      border: 1px solid #283344;
+    }
+
+    .ai-toggle button {
+      flex: 1;
+      padding: 12px 10px;
+      border: none;
+      border-radius: 60px;
+      background: transparent;
+      color: #7e93b3;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+
+    .ai-toggle button.active {
+      background: #1f2f48;
+      color: white;
+      box-shadow: 0 4px 8px #00000033;
+    }
+
+    .ai-toggle button i {
+      font-size: 16px;
+    }
+
+    .bot-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0d131f;
+      border-radius: 20px;
+      padding: 14px 18px;
+      border: 1px solid #283344;
+    }
+
+    .bot-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #4b5e7a;
+      box-shadow: 0 0 8px #4b5e7a55;
+      transition: 0.2s;
+    }
+
+    .dot.active {
+      background: #1e9e5a;
+      box-shadow: 0 0 12px #1e9e5a;
+    }
+
+    .bot-label {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .bot-label small {
+      display: block;
+      font-weight: 400;
+      font-size: 12px;
+      color: #6d82a3;
+    }
+
+    .bot-switch {
+      width: 50px;
+      height: 28px;
+      background: #2a3648;
+      border-radius: 40px;
+      position: relative;
+      cursor: pointer;
+      transition: 0.15s;
+      border: 1px solid #3e4f64;
+    }
+
+    .bot-switch.on {
+      background: #2b6bff;
+      border-color: #2b6bff;
+    }
+
+    .bot-switch::after {
+      content: "";
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: 0.15s;
+    }
+
+    .bot-switch.on::after {
+      left: 24px;
+    }
+
+    /* MANUAL TRADE KEYPAD (quick actions) */
+    .manual-keys {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .key-btn {
+      background: #1a2438;
+      border: 1px solid #2e3e56;
+      border-radius: 14px;
+      padding: 12px 0;
+      font-weight: 600;
+      font-size: 15px;
+      color: #b8cbee;
+      cursor: pointer;
+      transition: 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .key-btn:hover {
+      background: #253249;
+      border-color: #3e5a7a;
+    }
+
+    .key-btn i {
+      font-size: 14px;
+    }
+
+    .key-btn.accent {
+      background: #2b6bff22;
+      border-color: #2b6bff;
+      color: #6b9aff;
+    }
+
+    /* BOTTOM SECTION – HISTORY / LOG */
+    .history-section {
+      margin-top: 24px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .history-header h4 {
+      font-weight: 600;
+      font-size: 15px;
+      color: #a5b9da;
+    }
+
+    .history-header span {
+      font-size: 12px;
+      color: #5f7392;
+    }
+
+    .log-list {
+      background: #0b111b;
+      border-radius: 22px;
+      border: 1px solid #1d2838;
+      max-height: 160px;
+      overflow-y: auto;
+      padding: 6px 4px;
+    }
+
+    .log-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid #18202e;
+      font-size: 13px;
+      align-items: center;
+    }
+
+    .log-item:last-child {
+      border-bottom: none;
+    }
+
+    .log-type {
+      font-weight: 600;
+    }
+
+    .log-type.buy {
+      color: #1e9e5a;
+    }
+
+    .log-type.sell {
+      color: #d94c4c;
+    }
+
+    .log-amount {
+      font-weight: 700;
+    }
+
+    .log-time {
+      color: #617594;
+      font-size: 11px;
+    }
+
+    /* MODAL (MPESA / BINANCE) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.15s;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background: #131e2d;
+      max-width: 400px;
+      width: 100%;
+      border-radius: 32px;
+      padding: 28px 24px;
+      border: 1px solid #2f4056;
+      box-shadow: 0 30px 50px -10px black;
+      transform: scale(0.96);
+      transition: 0.15s;
+    }
+
+    .modal-overlay.show .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-box h3 {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+    }
+
+    .modal-box .input-group {
+      margin-bottom: 18px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .modal-actions .btn {
+      flex: 1;
+      padding: 14px;
+    }
+
+    /* RESPONSIVE FINE-TUNE */
+    @media (max-width: 500px) {
+      .app {
+        padding: 16px 12px;
+        border-radius: 28px;
+      }
+
+      .logo-text {
+        font-size: 18px;
+      }
+
+      .balance-card {
+        padding: 6px 14px;
+      }
+
+      .balance-amount {
+        font-size: 17px;
+      }
+
+      .btn {
+        padding: 10px 16px;
+        font-size: 13px;
+      }
+
+      .opt-btn {
+        padding: 12px 0;
+        font-size: 15px;
+      }
+
+      .input-group input {
+        font-size: 18px;
+      }
+
+      .trade-btn {
+        font-size: 16px;
+        padding: 16px;
+      }
+    }
+
+    /* SCROLLBAR */
+    .log-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .log-list::-webkit-scrollbar-track {
+      background: #0b111b;
+    }
+
+    .log-list::-webkit-scrollbar-thumb {
+      background: #2e3e56;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="logo-text">Deriv AI</div>
+      </div>
+      <div class="balance-card">
+        <div class="balance-label">Balance</div>
+        <div class="balance-amount"><i class="fas fa-dollar-sign"></i> <span id="balanceDisplay">2,450.00</span></div>
+      </div>
+    </div>
+
+    <!-- DEPOSIT / WITHDRAW QUICK ACTIONS -->
+    <div class="action-bar">
+      <button class="btn btn-mpesa" id="depositMpesaBtn"><i class="fas fa-mobile-alt"></i> Deposit via M-Pesa</button>
+      <button class="btn btn-binance" id="withdrawBinanceBtn"><i class="fab fa-bitcoin"></i> Withdraw to Binance</button>
+      <button class="btn btn-outline" id="withdrawMpesaBtn"><i class="fas fa-money-bill-wave"></i> Withdraw to M-Pesa</button>
+    </div>
+
+    <!-- MAIN TRADING GRID -->
+    <div class="trade-grid">
+      <!-- LEFT CARD: OPTIONS TRADING -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-chart-simple"></i> Options Trade</h3>
+          <span class="badge-option">Rise / Fall</span>
+        </div>
+
+        <!-- Option type: Buy / Sell -->
+        <div class="option-buttons">
+          <button class="opt-btn buy active" id="buyOptionBtn"><i class="fas fa-arrow-up"></i> BUY <small>Rise</small></button>
+          <button class="opt-btn sell" id="sellOptionBtn"><i class="fas fa-arrow-down"></i> SELL <small>Fall</small></button>
+        </div>
+
+        <!-- Stake & Duration -->
+        <div class="input-row">
+          <div class="input-group">
+            <label>Stake (USD)</label>
+            <input type="number" id="stakeInput" value="10" min="1" step="1">
+          </div>
+          <div class="input-group">
+            <label>Duration (min)</label>
+            <input type="number" id="durationInput" value="5" min="1" step="1">
+          </div>
+        </div>
+
+        <!-- Contract summary -->
+        <div class="contract-info">
+          <span>Payout</span>
+          <strong id="payoutDisplay">$19.50</strong>
+          <span>Potential</span>
+          <strong id="profitDisplay">+$9.50</strong>
+        </div>
+
+        <!-- Place trade button -->
+        <button class="trade-btn" id="placeTradeBtn"><i class="fas fa-bolt"></i> EXECUTE TRADE</button>
+      </div>
+
+      <!-- RIGHT CARD: AI & MANUAL CONTROLS -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-robot"></i> Trading Mode</h3>
+          <span class="badge-option">AI / Manual</span>
+        </div>
+
+        <div class="ai-section">
+          <!-- Toggle AI / Manual -->
+          <div class="ai-toggle" id="modeToggle">
+            <button class="active" data-mode="ai"><i class="fas fa-robot"></i> AI Robot</button>
+            <button data-mode="manual"><i class="fas fa-hand-pointer"></i> Manual</button>
+          </div>
+
+          <!-- Bot status / switch -->
+          <div class="bot-status">
+            <div class="bot-indicator">
+              <div class="dot active" id="botDot"></div>
+              <div class="bot-label">
+                AI Trader <small id="botSubtext">running · momentum</small>
+              </div>
+            </div>
+            <div class="bot-switch on" id="botSwitch"></div>
+          </div>
+
+          <!-- Manual keypad (quick trade keys) -->
+          <div class="manual-keys" id="manualKeys">
+            <button class="key-btn accent" id="keyStakeUp"><i class="fas fa-plus"></i> $10</button>
+            <button class="key-btn accent" id="keyStakeDown"><i class="fas fa-minus"></i> $10</button>
+            <button class="key-btn" id="keyQuickBuy"><i class="fas fa-arrow-up"></i> Buy</button>
+            <button class="key-btn" id="keyQuickSell"><i class="fas fa-arrow-down"></i> Sell</button>
+            <button class="key-btn" id="keyDouble"><i class="fas fa-2x"></i> 2x</button>
+            <button class="key-btn" id="keyHalf"><i class="fas fa-1x"></i> 0.5x</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRADE HISTORY / LOG -->
+    <div class="history-section">
+      <div class="history-header">
+        <h4><i class="fas fa-clock-rotate-left"></i> Recent activity</h4>
+        <span>live log</span>
+      </div>
+      <div class="log-list" id="logList">
+        <div class="log-item">
+          <span class="log-type buy">BUY</span>
+          <span class="log-amount">$10.00</span>
+          <span class="log-time">just now</span>
+        </div>
+        <div class="log-item">
+          <span class="log-type sell">SELL</span>
+          <span class="log-amount">$25.00</span>
+          <span class="log-time">2 min ago</span>
+        </div>
+        <div class="log-item">
+          <span class="log-type buy">BUY</span>
+          <span class="log-amount">$5.00</span>
+          <span class="log-time">7 min ago</span>
+        </div>
+        <div class="log-item">
+          <span class="log-type sell">SELL</span>
+          <span class="log-amount">$50.00</span>
+          <span class="log-time">12 min ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MPESA DEPOSIT MODAL -->
+  <div class="modal-overlay" id="mpesaDepositModal">
+    <div class="modal-box">
+      <h3><i class="fas fa-mobile-alt" style="color:#1e8e3e;"></i> Deposit via M-Pesa</h3>
+      <div class="input-group">
+        <label>Phone number</label>
+        <input type="tel" id="mpesaPhone" placeholder="+254 7XX XXX XXX" value="+254 712 345 678">
+      </div>
+      <div class="input-group">
+        <label>Amount (USD)</label>
+        <input type="number" id="mpesaAmount" value="100" min="1" step="1">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="closeMpesaDeposit">Cancel</button>
+        <button class="btn btn-mpesa" id="confirmMpesaDeposit"><i class="fas fa-check"></i> Deposit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BINANCE WITHDRAW MODAL -->
+  <div class="modal-overlay" id="binanceWithdrawModal">
+    <div class="modal-box">
+      <h3><i class="fab fa-bitcoin" style="color:#f0b90b;"></i> Withdraw to Binance</h3>
+      <div class="input-group">
+        <label>Binance address</label>
+        <input type="text" id="binanceAddress" placeholder="bnb1...xyz" value="bnb1x3y5z7...">
+      </div>
+      <div class="input-group">
+        <label>Amount (USD)</label>
+        <input type="number" id="binanceAmount" value="50" min="1" step="1">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="closeBinanceWithdraw">Cancel</button>
+        <button class="btn btn-binance" id="confirmBinanceWithdraw"><i class="fas fa-check"></i> Withdraw</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MPESA WITHDRAW MODAL -->
+  <div class="modal-overlay" id="mpesaWithdrawModal">
+    <div class="modal-box">
+      <h3><i class="fas fa-money-bill-wave" style="color:#2b6bff;"></i> Withdraw to M-Pesa</h3>
+      <div class="input-group">
+        <label>Phone number</label>
+        <input type="tel" id="mpesaWithdrawPhone" placeholder="+254 7XX XXX XXX" value="+254 712 345 678">
+      </div>
+      <div class="input-group">
+        <label>Amount (USD)</label>
+        <input type="number" id="mpesaWithdrawAmount" value="50" min="1" step="1">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="closeMpesaWithdraw">Cancel</button>
+        <button class="btn btn-mpesa" id="confirmMpesaWithdraw"><i class="fas fa-check"></i> Withdraw</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // ----- GLOBAL STATE -----
+      let currentBalance = 2450.00;
+      let currentOption = 'buy';       // 'buy' or 'sell'
+      let currentMode = 'ai';          // 'ai' or 'manual'
+      let botActive = true;
+      let currentStake = 10;
+      let currentDuration = 5;
+      let payoutRate = 1.95;           // 95% profit
+
+      // DOM refs
+      const balanceDisplay = document.getElementById('balanceDisplay');
+      const buyOptionBtn = document.getElementById('buyOptionBtn');
+      const sellOptionBtn = document.getElementById('sellOptionBtn');
+      const stakeInput = document.getElementById('stakeInput');
+      const durationInput = document.getElementById('durationInput');
+      const payoutDisplay = document.getElementById('payoutDisplay');
+      const profitDisplay = document.getElementById('profitDisplay');
+      const placeTradeBtn = document.getElementById('placeTradeBtn');
+      const modeToggle = document.getElementById('modeToggle');
+      const botDot = document.getElementById('botDot');
+      const botSwitch = document.getElementById('botSwitch');
+      const botSubtext = document.getElementById('botSubtext');
+      const logList = document.getElementById('logList');
+
+      // Modal elements
+      const mpesaDepositModal = document.getElementById('mpesaDepositModal');
+      const binanceWithdrawModal = document.getElementById('binanceWithdrawModal');
+      const mpesaWithdrawModal = document.getElementById('mpesaWithdrawModal');
+
+      // ----- HELPER FUNCTIONS -----
+      function updateBalanceUI() {
+        balanceDisplay.textContent = currentBalance.toFixed(2);
+      }
+
+      function updateContractInfo() {
+        const stake = parseFloat(stakeInput.value) || 0;
+        const payout = stake * payoutRate;
+        const profit = payout - stake;
+        payoutDisplay.textContent = `$${payout.toFixed(2)}`;
+        profitDisplay.textContent = `+$${profit.toFixed(2)}`;
+      }
+
+      function addLogEntry(type, amount, timeStr = 'just now') {
+        const logItem = document.createElement('div');
+        logItem.className = 'log-item';
+        const typeClass = type.toLowerCase() === 'buy' ? 'buy' : 'sell';
+        logItem.innerHTML = `
+          <span class="log-type ${typeClass}">${type}</span>
+          <span class="log-amount">$${amount.toFixed(2)}</span>
+          <span class="log-time">${timeStr}</span>
+        `;
+        logList.prepend(logItem);
+        // keep max 20 logs
+        while (logList.children.length > 20) {
+          logList.removeChild(logList.lastChild);
+        }
+      }
+
+      // trade execution logic (common)
+      function executeTrade(option, stake, isAuto = false) {
+        if (stake > currentBalance) {
+          alert('Insufficient balance. Please deposit.');
+          return false;
+        }
+        if (stake <= 0) {
+          alert('Stake must be greater than 0.');
+          return false;
+        }
+
+        // Deduct stake (simulate trade)
+        currentBalance -= stake;
+        updateBalanceUI();
+
+        // Simulate win/loss (70% win rate for AI, manual random)
+        let win = false;
+        if (isAuto) {
+          win = Math.random() < 0.7; // AI good runs
+        } else {
+          win = Math.random() < 0.55; // manual random
+        }
+
+        // For simplicity: win returns payout (stake + profit)
+        if (win) {
+          const payout = stake * payoutRate;
+          currentBalance += payout;
+          addLogEntry(option.toUpperCase(), stake, 'win +$' + (payout - stake).toFixed(2));
+        } else {
+          addLogEntry(option.toUpperCase(), stake, 'loss -$' + stake.toFixed(2));
+        }
+
+        updateBalanceUI();
+        return win;
+      }
+
+      // ----- INITIAL UI UPDATE -----
+      updateBalanceUI();
+      updateContractInfo();
+
+      // ----- OPTION BUTTONS (BUY/SELL) -----
+      buyOptionBtn.addEventListener('click', () => {
+        currentOption = 'buy';
+        buyOptionBtn.classList.add('active');
+        sellOptionBtn.classList.remove('active');
+      });
+
+      sellOptionBtn.addEventListener('click', () => {
+        currentOption = 'sell';
+        sellOptionBtn.classList.add('active');
+        buyOptionBtn.classList.remove('active');
+      });
+
+      // ----- STAKE & DURATION INPUT LISTENERS -----
+      stakeInput.addEventListener('input', () => {
+        currentStake = parseFloat(stakeInput.value) || 0;
+        updateContractInfo();
+      });
+      durationInput.addEventListener('input', () => {
+        currentDuration = parseFloat(durationInput.value) || 5;
+      });
+
+      // ----- PLACE TRADE (main button) -----
+      placeTradeBtn.addEventListener('click', () => {
+        const stake = parseFloat(stakeInput.value) || 0;
+        if (stake <= 0) {
+          alert('Enter a valid stake.');
+          return;
+        }
+        if (stake > currentBalance) {
+          alert('Insufficient balance. Deposit via M-Pesa.');
+          return;
+        }
+        const isAuto = (currentMode === 'ai' && botActive);
+        executeTrade(currentOption, stake, isAuto);
+
+        // If AI mode, auto-adjust stake slightly (simulate AI)
+        if (currentMode === 'ai' && botActive) {
+          // AI logic: adjust stake based on balance
+          let newStake = Math.round(stake * 1.1);
+          if (newStake < 1) newStake = 1;
+          stakeInput.value = newStake;
+          currentStake = newStake;
+          updateContractInfo();
+        }
+      });
+
+      // ----- MODE TOGGLE (AI / MANUAL) -----
+      modeToggle.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modeToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentMode = btn.dataset.mode;
+
+          // update bot status subtext
+          if (currentMode === 'ai') {
+            botSubtext.textContent = botActive ? 'running · momentum' : 'paused';
